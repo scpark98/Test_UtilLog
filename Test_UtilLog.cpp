@@ -41,7 +41,7 @@ CTestUtilLogApp theApp;
 
 BOOL CTestUtilLogApp::InitInstance()
 {
-	gLog.Init(_T("../../custom log folder"));
+	gLog.Init(_T("../../custom log folder/folder1/folder2"));
 	logWrite(LOG_LEVEL_RELEASE, _T("log test = %d, %s, %s"), 123, _T("abc"), _T("한글  테스트"));
 
 	// 애플리케이션 매니페스트가 ComCtl32.dll 버전 6 이상을 사용하여 비주얼 스타일을

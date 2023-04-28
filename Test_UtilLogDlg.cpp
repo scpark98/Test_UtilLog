@@ -8,6 +8,10 @@
 #include "Test_UtilLogDlg.h"
 #include "afxdialogex.h"
 
+#include <imm.h>
+
+#include "../../Common/Functions.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -65,6 +69,8 @@ BEGIN_MESSAGE_MAP(CTestUtilLogDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDOK, &CTestUtilLogDlg::OnBnClickedOk)
+	ON_BN_CLICKED(IDCANCEL, &CTestUtilLogDlg::OnBnClickedCancel)
 END_MESSAGE_MAP()
 
 
@@ -100,7 +106,8 @@ BOOL CTestUtilLogDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
-	logWrite(LOG_LEVEL_RELEASE, _T("CTestUtilLogDlg::OnInitDialog()"));
+	
+	logWrite(LOG_LEVEL_RELEASE, _T("%s"), ENUM_TO_CSTRING(enum_test));
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -154,3 +161,20 @@ HCURSOR CTestUtilLogDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CTestUtilLogDlg::OnBnClickedOk()
+{
+	HIMC himc = ImmGetContext(m_hWnd);
+	DWORD dwConv, dwSent;
+
+	BOOL b = ImmGetConversionStatus(himc, &dwConv, &dwSent);
+	AfxMessageBox((dwConv & IME_CMODE_NATIVE) ? _T("kr") : _T("en"));
+}
+
+
+void CTestUtilLogDlg::OnBnClickedCancel()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	CDialogEx::OnCancel();
+}

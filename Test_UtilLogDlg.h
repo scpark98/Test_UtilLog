@@ -17,6 +17,13 @@ public:
 	enum { IDD = IDD_TEST_UTILLOG_DIALOG };
 #endif
 
+protected:
+	enum ENUM_LIST
+	{
+		enum_test = 0,
+		enum_test1,
+	};
+
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 지원입니다.
 
@@ -31,4 +38,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedOk();
+	afx_msg void OnBnClickedCancel();
 };
