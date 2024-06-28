@@ -107,7 +107,92 @@ BOOL CTestUtilLogDlg::OnInitDialog()
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 	
-	logWrite(LOG_LEVEL_RELEASE, _T("%s"), ENUM_TO_CSTRING(enum_test));
+	logWrite(_T("%s"), ENUM_TO_CSTRING(enum_test));
+
+	/*
+	[멀티바이트 환경]
+	* - 유니코드로 만들어진 현재 날짜의 로그파일(UTF-8)이 이미 있다면
+	    이를 지우고 프로그램을 실행해야 EUC-KR 인코딩의 로그파일이 새로 생성되고 정상적으로 저장된다.
+	*   (그 반대인 경우도 마찬가지임)
+	* - char 타입의 문자열을 logWrite, TRACE해도 정상이며 다만 logWrite의 리턴문자열은 VS의 변수값 표시창에서는 깨져서 표시되나
+	*   CString에 리턴값을 받아보면 정상적으로 처리된다. CString str = CString(cstr); 로 정상 동작함.
+	* 
+	[유니코드 환경]
+	* - char 타입의 문자열을 logWrite, TRACE로 그냥 출력하면 비정상 동작하나
+	    CString(cstr)로 캐스팅하여 처리하면 모두 정상 동작함.
+	  - 단, 메모리 상황에 따라 cstr의 뒷부분에 어떤 garbage가 존재할 지 장담할 수 없으므로
+	    반드시 실제 데이터만 가지도록 \0을 추가해줘야 한다.
+
+	[결론]
+	  - char* 문자열을 사용할 경우 그 데이터의 끝에 '\0'이 있을 경우는 CString(cstr)로 사용하지만
+	    끝문자가 없을 경우는 장담할 수 없으므로 char2CString(cstr, len)으로 길이까지 명확히 줘야한다.
+	*/
+	CString str, log;
+	//char* cstr = "동해물과 백두산이";
+	//char* cstr = "동해물과 백두산이\0";
+	//char cstr[200000];
+	char* cstr = new char[2000000];
+	//ZeroMemory(cstr, sizeof(char) * 2000000);
+
+	strcpy(cstr, "동해물과 백두산이");
+
+	TRACE(_T("cstr = %s\n"), CString(cstr));			//ok
+	log = logWrite(_T("%s"), cstr);						//fail "동해물과"까지만 출력
+
+	//유니코드에서 에러
+	str = char2CString(cstr);
+	log = logWrite(_T("char2CString(cstr) : %s"), str);	//fail "동해물과"까지만 출력
+
+	str = CString(cstr);
+	log = logWrite(_T("CString(cstr) : %s"), str);		//ok
+
+	TRACE(_T("%s\n"), CString(cstr));
+
+	delete[] cstr;
+
+	bool auto_update;
+	int level;
+	if (get_windows_update_setting(auto_update, level))
+	{
+		CString str;
+		str.Format(_T("auto_update = %d, level = %d"), auto_update, level);
+		//AfxMessageBox(str);
+	}
+
+	//EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
+	//for (int i = 0; i < g_dqMonitors.size(); i++)
+	//	AfxMessageBox(i2S(i) + _T(" : ") + GetRectInfoString(g_dqMonitors[i], 2));
+
+	//char* chStr = CString2char(_T("TestString 한글"));
+	//delete[] chStr;
+
+	//static const UINT WND_MSG = RegisterWindowMessage(_T("CallMessage"));
+	//CString str;
+	//str.Format(_T("msg = %d"), WND_MSG);
+	//AfxMessageBox(str);
+
+
+	enum_display_monitors();
+	for (int i = 0; i < g_dqMonitors.size(); i++)
+	{
+		logWrite(_T("%d : %s"), i, get_rect_info_string(g_dqMonitors[i], 2));
+	}
+
+	CRect clientRect;
+	clientRect.left = 0;
+	clientRect.top = 0;
+	clientRect.right = GetSystemMetrics(SM_CXSCREEN);
+	clientRect.bottom = GetSystemMetrics(SM_CYSCREEN);
+
+	UINT x(GetSystemMetrics(SM_XVIRTUALSCREEN));
+	UINT y(GetSystemMetrics(SM_YVIRTUALSCREEN));
+	UINT cx(GetSystemMetrics(SM_CXVIRTUALSCREEN));
+	UINT cy(GetSystemMetrics(SM_CYVIRTUALSCREEN));
+
+	clientRect.left = x;
+	clientRect.top = y;
+	clientRect.right = x + cx;
+	clientRect.bottom = y + cy;
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }

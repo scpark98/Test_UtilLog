@@ -11,6 +11,7 @@
 #define new DEBUG_NEW
 #endif
 
+SCLog gLog;
 
 // CTestUtilLogApp
 
@@ -41,8 +42,16 @@ CTestUtilLogApp theApp;
 
 BOOL CTestUtilLogApp::InitInstance()
 {
-	gLog.Init(_T("../../custom log folder/folder1/folder2"));
-	logWrite(LOG_LEVEL_RELEASE, _T("log test = %d, %s, %s"), 123, _T("abc"), _T("한글  테스트"));
+	//로그파일의 위치를 별도로 지정할 경우
+	//gLog.Init(_T("../../custom log folder/folder1/folder2"));
+	
+	//로그파일에 함수명과 라인을 표시하지 않고자 할 경우
+	gLog.show_function_name(false);
+	//gLog.show_line_number(false);
+
+	logWrite(_T("\n==================== Program Start ===================="));
+
+	logWrite(_T("log test = %d, %s, %s"), 123, _T("abc"), _T("한글  테스트"));
 
 	// 애플리케이션 매니페스트가 ComCtl32.dll 버전 6 이상을 사용하여 비주얼 스타일을
 	// 사용하도록 지정하는 경우, Windows XP 상에서 반드시 InitCommonControlsEx()가 필요합니다.
@@ -109,3 +118,12 @@ BOOL CTestUtilLogApp::InitInstance()
 	return FALSE;
 }
 
+
+
+int CTestUtilLogApp::ExitInstance()
+{
+	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
+	logWrite(_T("==================== Program Exit ====================\n"));
+
+	return CWinApp::ExitInstance();
+}
