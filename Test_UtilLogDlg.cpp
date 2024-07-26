@@ -106,6 +106,43 @@ BOOL CTestUtilLogDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+
+	//ShellExecute(NULL, _T("open"), _T("www.naver.com"), 0, 0, SW_SHOWNORMAL);
+
+#define BUFSIZE 256
+	typedef void (WINAPI* PGNSI)(LPSYSTEM_INFO);
+	typedef BOOL(WINAPI* PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);
+
+	OSVERSIONINFOEX osvi;
+	SYSTEM_INFO si;
+	PGNSI pGNSI;
+	PGPI pGPI;
+	BOOL bOsVersionInfoEx;
+	DWORD dwType;
+
+	ZeroMemory(&si, sizeof(SYSTEM_INFO));
+	ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+
+	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+	bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*)&osvi);
+
+
+	osvi = get_windows_version();
+	CString str = get_windows_version_string();
+
+	//if(bOsVersionInfoEx != NULL ) return 1;
+
+	// Call GetNativeSystemInfo if supported or GetSystemInfo otherwise.
+
+	pGNSI = (PGNSI)GetProcAddress(
+		GetModuleHandle(TEXT("kernel32.dll")),
+		"GetNativeSystemInfo");
+	if (NULL != pGNSI)
+		pGNSI(&si);
+	else GetSystemInfo(&si);
+
+
+
 	
 	logWrite(_T("%s"), ENUM_TO_CSTRING(enum_test));
 
@@ -127,28 +164,30 @@ BOOL CTestUtilLogDlg::OnInitDialog()
 	  - char* 문자열을 사용할 경우 그 데이터의 끝에 '\0'이 있을 경우는 CString(cstr)로 사용하지만
 	    끝문자가 없을 경우는 장담할 수 없으므로 char2CString(cstr, len)으로 길이까지 명확히 줘야한다.
 	*/
-	CString str, log;
+
+	CString log;
 	//char* cstr = "동해물과 백두산이";
 	//char* cstr = "동해물과 백두산이\0";
 	//char cstr[200000];
-	char* cstr = new char[2000000];
-	//ZeroMemory(cstr, sizeof(char) * 2000000);
+	char* cstr = new char[200];
+	ZeroMemory(cstr, sizeof(char) * 200);
 
 	strcpy(cstr, "동해물과 백두산이");
 
-	TRACE(_T("cstr = %s\n"), CString(cstr));			//ok
-	log = logWrite(_T("%s"), cstr);						//fail "동해물과"까지만 출력
+	TRACE(_T("CString(cstr) = %s\n"), CString(cstr));			//ok
+	log = logWrite(_T("cstr = %s"), cstr);						//fail. 한글깨짐
 
 	//유니코드에서 에러
 	str = char2CString(cstr);
-	log = logWrite(_T("char2CString(cstr) : %s"), str);	//fail "동해물과"까지만 출력
+	log = logWrite(_T("char2CString(cstr) : %s"), str);			//fail "동해물과"까지만 출력
 
 	str = CString(cstr);
-	log = logWrite(_T("CString(cstr) : %s"), str);		//ok
+	log = logWrite(_T("CString(cstr) : %s"), str);				//ok
 
 	TRACE(_T("%s\n"), CString(cstr));
 
 	delete[] cstr;
+
 
 	bool auto_update;
 	int level;

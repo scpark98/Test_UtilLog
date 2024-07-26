@@ -7,6 +7,8 @@
 #include "Test_UtilLog.h"
 #include "Test_UtilLogDlg.h"
 
+#include "../../Common/Functions.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -42,8 +44,18 @@ CTestUtilLogApp theApp;
 
 BOOL CTestUtilLogApp::InitInstance()
 {
-	//로그파일의 위치를 별도로 지정할 경우
-	//gLog.Init(_T("../../custom log folder/folder1/folder2"));
+	CString sExe = get_exe_filename();
+	CString sTitle = get_part(sExe, fn_title);
+
+	//로그파일의 위치를 별도로 지정하지 않고 로그를 남길 경우 .exe파일 폴더내에 "Log"라는 폴더를 생성하여 기록
+	logWrite(_T("\n==================== Program Start ===================="));
+	logWrite(_T("\nwrite in default log folder and name"));
+	logWrite(_T("log path = %s"), gLog.get_log_full_path());
+
+	//로그파일의 위치를 별도로 지정할 경우, 중간에 로그 폴더 또는 로그파일명을 변경할 경우
+	//gLog.set(_T("../../custom log folder/folder1/folder2"), _T("renamed_log_filename"));
+	gLog.set(_T("../../custom log folder/folder1/folder2"));
+	logWrite(_T("log path = %s"), gLog.get_log_full_path());
 	
 	//로그파일에 함수명과 라인을 표시하지 않고자 할 경우
 	gLog.show_function_name(false);
