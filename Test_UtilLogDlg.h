@@ -24,6 +24,9 @@ protected:
 		enum_test1,
 	};
 
+	int		m_thread_index = 0;
+	void	thread_function(int thread_index, int start, int end);
+
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 지원입니다.
 

@@ -42,6 +42,9 @@
     <ClInclude Include="..\..\Common\log\SCLog\SCLog.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\thread\ThreadPool\ThreadPool.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Test_UtilLog.cpp">
@@ -57,6 +60,9 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Common\log\SCLog\SCLog.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\thread\ThreadPool\ThreadPool.cpp">
       <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>

@@ -10,6 +10,7 @@
 
 #include <imm.h>
 
+#include <thread>
 #include "../../Common/Functions.h"
 
 #ifdef _DEBUG
@@ -107,45 +108,6 @@ BOOL CTestUtilLogDlg::OnInitDialog()
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 
-	//ShellExecute(NULL, _T("open"), _T("www.naver.com"), 0, 0, SW_SHOWNORMAL);
-
-#define BUFSIZE 256
-	typedef void (WINAPI* PGNSI)(LPSYSTEM_INFO);
-	typedef BOOL(WINAPI* PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);
-
-	OSVERSIONINFOEX osvi;
-	SYSTEM_INFO si;
-	PGNSI pGNSI;
-	PGPI pGPI;
-	BOOL bOsVersionInfoEx;
-	DWORD dwType;
-
-	ZeroMemory(&si, sizeof(SYSTEM_INFO));
-	ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-
-	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-	bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*)&osvi);
-
-
-	osvi = get_windows_version();
-	CString str = get_windows_version_string();
-
-	//if(bOsVersionInfoEx != NULL ) return 1;
-
-	// Call GetNativeSystemInfo if supported or GetSystemInfo otherwise.
-
-	pGNSI = (PGNSI)GetProcAddress(
-		GetModuleHandle(TEXT("kernel32.dll")),
-		"GetNativeSystemInfo");
-	if (NULL != pGNSI)
-		pGNSI(&si);
-	else GetSystemInfo(&si);
-
-
-
-	
-	logWrite(_T("%s"), ENUM_TO_CSTRING(enum_test));
-
 	/*
 	[멀티바이트 환경]
 	* - 유니코드로 만들어진 현재 날짜의 로그파일(UTF-8)이 이미 있다면
@@ -165,7 +127,9 @@ BOOL CTestUtilLogDlg::OnInitDialog()
 	    끝문자가 없을 경우는 장담할 수 없으므로 char2CString(cstr, len)으로 길이까지 명확히 줘야한다.
 	*/
 
+	/*
 	CString log;
+	CString str;
 	//char* cstr = "동해물과 백두산이";
 	//char* cstr = "동해물과 백두산이\0";
 	//char cstr[200000];
@@ -187,51 +151,7 @@ BOOL CTestUtilLogDlg::OnInitDialog()
 	TRACE(_T("%s\n"), CString(cstr));
 
 	delete[] cstr;
-
-
-	bool auto_update;
-	int level;
-	if (get_windows_update_setting(auto_update, level))
-	{
-		CString str;
-		str.Format(_T("auto_update = %d, level = %d"), auto_update, level);
-		//AfxMessageBox(str);
-	}
-
-	//EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
-	//for (int i = 0; i < g_dqMonitors.size(); i++)
-	//	AfxMessageBox(i2S(i) + _T(" : ") + GetRectInfoString(g_dqMonitors[i], 2));
-
-	//char* chStr = CString2char(_T("TestString 한글"));
-	//delete[] chStr;
-
-	//static const UINT WND_MSG = RegisterWindowMessage(_T("CallMessage"));
-	//CString str;
-	//str.Format(_T("msg = %d"), WND_MSG);
-	//AfxMessageBox(str);
-
-
-	enum_display_monitors();
-	for (int i = 0; i < g_dqMonitors.size(); i++)
-	{
-		logWrite(_T("%d : %s"), i, get_rect_info_string(g_dqMonitors[i], 2));
-	}
-
-	CRect clientRect;
-	clientRect.left = 0;
-	clientRect.top = 0;
-	clientRect.right = GetSystemMetrics(SM_CXSCREEN);
-	clientRect.bottom = GetSystemMetrics(SM_CYSCREEN);
-
-	UINT x(GetSystemMetrics(SM_XVIRTUALSCREEN));
-	UINT y(GetSystemMetrics(SM_YVIRTUALSCREEN));
-	UINT cx(GetSystemMetrics(SM_CXVIRTUALSCREEN));
-	UINT cy(GetSystemMetrics(SM_CYVIRTUALSCREEN));
-
-	clientRect.left = x;
-	clientRect.top = y;
-	clientRect.right = x + cx;
-	clientRect.bottom = y + cy;
+	*/
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -289,11 +209,16 @@ HCURSOR CTestUtilLogDlg::OnQueryDragIcon()
 
 void CTestUtilLogDlg::OnBnClickedOk()
 {
-	HIMC himc = ImmGetContext(m_hWnd);
-	DWORD dwConv, dwSent;
+	//0 ~ 999까지 반복되는 thread_function()을 호출한다.
+	SetWindowText(i2S(m_thread_index));
 
-	BOOL b = ImmGetConversionStatus(himc, &dwConv, &dwSent);
-	AfxMessageBox((dwConv & IME_CMODE_NATIVE) ? _T("kr") : _T("en"));
+	int max_loop = 1000;
+
+	//각 thread는 0 ~ 999, 1000 ~ 1999, ..., 9000 ~ 9999까지 반복된다.
+	std::thread th(&CTestUtilLogDlg::thread_function, this, m_thread_index, m_thread_index * max_loop, m_thread_index * max_loop + max_loop);
+	th.detach();
+
+	m_thread_index++;
 }
 
 
@@ -301,4 +226,15 @@ void CTestUtilLogDlg::OnBnClickedCancel()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	CDialogEx::OnCancel();
+}
+
+void CTestUtilLogDlg::thread_function(int thread_index, int start, int end)
+{
+	for (int i = start; i < end; i++)
+	{
+		logWrite(_T("thread_index = %d, loop = %d"), thread_index, i);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+
+	logWrite(_T("thread %d terminated."), thread_index);
 }

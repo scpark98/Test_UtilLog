@@ -54,8 +54,8 @@ BOOL CTestUtilLogApp::InitInstance()
 
 	//로그파일의 위치를 별도로 지정할 경우, 중간에 로그 폴더 또는 로그파일명을 변경할 경우
 	//gLog.set(_T("../../custom log folder/folder1/folder2"), _T("renamed_log_filename"));
-	gLog.set(_T("../../custom log folder/folder1/folder2"));
-	logWrite(_T("log path = %s"), gLog.get_log_full_path());
+	//gLog.set(_T("../../custom log folder/folder1/folder2"));
+	//logWrite(_T("log path = %s"), gLog.get_log_full_path());
 	
 	//로그파일에 함수명과 라인을 표시하지 않고자 할 경우
 	gLog.show_function_name(false);
